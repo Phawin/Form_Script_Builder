@@ -67,6 +67,12 @@ class Image(Item):
         s2 = "item.setImage(img);\n"
         self.body+=s1
         self.body+=s2
+
+    def setImageDriveId(self,fileId): #Google Drive File ID
+        s1 = "var img = DriveApp.getFileById('[ID]');\n".replace("[ID]",fileId)
+        s2 = "item.setImage(img);\n"
+        self.body+=s1
+        self.body+=s2
         
     def setAlignment(self,alignmentOption):
         allowed = ["LEFT","CENTER","RIGHT"]
