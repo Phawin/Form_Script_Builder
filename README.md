@@ -1,3 +1,9 @@
 # Google Form Script Builder
 
-More details will be updated soon enough!
+## Usage
+
+```
+import scriptBuilder
+```
+
+More details will be updated, soon enough!

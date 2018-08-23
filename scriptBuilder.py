@@ -1,115 +1,4 @@
-def convertList(lst):
-    ret = "[<INSIDE>]"
-    inside = ""
-    n = len(lst)
-    for i in range(n):
-        inside+=str(lst[i])
-        if(i<n-1):
-            inside += ", "
-    return ret.replace("<INSIDE>",inside)
-
 import random as rnd
-class Question:
-    def __init__(self):
-        self.header = ""
-        self.opt = ""
-        self.body = ""
-        self.choiceStuff = ""
-        self.hasChoice = False
-        self.hasHeader = False
-        pass
-    
-    def setQuestionType(self,questionType):
-        s = "var item = form.add[SOMETHING]Item();\n"
-        
-        dic = {"TEXT":"Text",
-               "PARAGRAPH":"ParagraphText",
-               "DATE":"Date",
-               "DATETIME":"DateTime",
-               "TIME":"Time"}
-        
-        self.hasChoice = False
-        if(questionType == "MULTIPLE CHOICE"):
-            self.hasChoice = True
-            s = s.replace("[SOMETHING]","MultipleChoice")
-        elif (questionType == "CHECKBOX"):
-            self.hasChoice = True
-            s = s.replace("[SOMETHING]","Checkbox")
-        elif (questionType == "LIST"):
-            self.hasChoice = True
-            s = s.replace("[SOMETHING]","List")
-        else:
-            s = s.replace("[SOMETHING]",dic.get(questionType,"Text"))
-            
-        self.header = s
-        self.hasHeader = True
-        
-    def printResult(self):
-        print(self.opt)
-        
-    def getResult(self):
-        self.compileMe()
-        return self.opt
-    
-    def __str__(self):
-        return self.getResult()
-        
-    def compileMe(self):
-        self.opt = ""
-        if(not(self)):
-            print("Compilation Error: No Declaration")
-            return
-        self.opt = ""
-        self.opt+= "//Question Header\n\n"
-        self.opt+= self.header
-        self.opt+= "\n\n"
-        self.opt+= "//Question Configuration\n\n"
-        self.opt+= self.body
-        self.opt+="\n"
-        if(self.hasChoice):
-            self.opt+= "\n//Choices\n\n"
-            self.opt+= self.choiceStuff
-            self.opt+= "\n"
-    
-    #Question Properties
-    
-    def setTitle(self,title):
-        s = "item.setTitle('[TITLE]');\n".replace("[TITLE]",title)
-        self.body += s
-        
-    def setPoints(self,val):
-        val = int(val)
-        s = "item.setPoints([SCORE]);\n".replace("[SCORE]",str(val))
-        self.body += s
-        
-    def setRequired(self,arg = False):
-        s = "item.setRequired(false);\n"
-        if(arg):
-            s = s.replace("false","true")
-        self.body += s
-    
-    def setHelpText(self,helpText):
-        self.body += "item.setHelpText('[HELP_TEXT]');\n".replace("[HELP_TEXT]",helpText)
-        
-    #Dealing with "Choices"
-    def setChoice(self,choiceList,hasKey = False,shuffleOrder = False):
-        togo = []
-        for p in choiceList:
-            if(not hasKey):
-                togo.append("item.createChoice('[CHOICE]')".replace("[CHOICE]",str(p)))
-            else: #Has Answer Key
-                s = "item.createChoice('[CHOICE]',false)"
-                if(p[1]):
-                    s = s.replace("false","true")
-                s = s.replace("[CHOICE]",str(p[0]))
-                togo.append(s)
-        #Now we have all element
-        if(shuffleOrder):
-            rnd.shuffle(togo)
-        middle = convertList(togo)
-        
-        self.choiceStuff = "item.setChoices(<LIST>);\n".replace("<LIST>",middle)
-        
 class Item:
     def __init__(self):
         self.header = ""
@@ -130,7 +19,7 @@ class Item:
         
     def compileMe(self):
         self.opt = ""
-        if(not(self)):
+        if(not(self.hasHeader)):
             print("Compilation Error: No Declaration")
             return
         self.opt = ""
@@ -145,13 +34,21 @@ class Item:
     def setItemType(self,itemType):
         dic = {"PAGE BREAK":"PageBreak",
                "SECTION HEADER": "SectionHeader",
-               "IMAGE": "Image"}
+               "IMAGE": "Image",
+               "TEXT":"Text",
+               "PARAGRAPH":"ParagraphText",
+               "DATE":"Date",
+               "DATETIME":"DateTime",
+               "TIME":"Time",
+               "MULTIPLE CHOICE":"MultipleChoice",
+               "CHECKBOX":"Checkbox",
+               "LIST":"List"}
         s = "var item = form.add[SOMETHING]Item();\n"
         s = s.replace("[SOMETHING]",dic.get(itemType,"SectionHeader"))
         self.header = s
         self.hasHeader = True
     
-    #Question Properties
+    #General Item Properties
     
     def setTitle(self,title):
         s = "item.setTitle('[TITLE]');\n".replace("[TITLE]",title)
@@ -159,7 +56,7 @@ class Item:
     
     def setHelpText(self,helpText):
         self.body += "item.setHelpText('[HELP_TEXT]');\n".replace("[HELP_TEXT]",helpText)
-
+        
 class Image(Item):
     def __init__(self):
         Item.__init__(self)
@@ -183,6 +80,94 @@ class Image(Item):
         s = "item.setWidth(<W>);\n".replace("<W>",str(width))
         self.body+=s
 
+class Question(Item):
+    
+    def __init__(self):
+        Item.__init__(self)
+        self.choiceStuff = ""
+        
+    def setQuestionType(self,qt):
+        Item.setItemType(self,qt)
+        
+    #General Question Configuration
+    def setPoints(self,val):
+        val = int(val)
+        s = "item.setPoints([SCORE]);\n".replace("[SCORE]",str(val))
+        self.body += s
+        
+    def setRequired(self,arg = False):
+        s = "item.setRequired(false);\n"
+        if(arg):
+            s = s.replace("false","true")
+        self.body += s
+    
+class ChoiceQuestion(Question):
+    def __init__(self):
+        Question.__init__(self)
+        self.choiceStuff = True
+    
+    def convertList(self,lst):
+        ret = "[<INSIDE>]"
+        inside = ""
+        n = len(lst)
+        for i in range(n):
+            inside+=str(lst[i])
+            if(i<n-1):
+                inside += ", "
+        return ret.replace("<INSIDE>",inside)
+    
+    def setChoice(self,choiceList,hasKey = False,shuffleOrder = False):
+        togo = []
+        for p in choiceList:
+            if(not hasKey):
+                togo.append("item.createChoice('[CHOICE]')".replace("[CHOICE]",str(p)))
+            else: #Has Answer Key
+                s = "item.createChoice('[CHOICE]',false)"
+                if(p[1]):
+                    s = s.replace("false","true")
+                s = s.replace("[CHOICE]",str(p[0]))
+                togo.append(s)
+        #Now we have all element
+        if(shuffleOrder):
+            rnd.shuffle(togo)
+        middle = self.convertList(togo)
+        
+        self.choiceStuff = "item.setChoices(<LIST>);\n".replace("<LIST>",middle)
+        
+    #Overriding Functions
+    def compileMe(self):
+        self.opt = ""
+        if(not(self.hasHeader)):
+            print("Compilation Error: No Declaration")
+            return
+        self.opt = ""
+        self.opt+= "//Item Header\n\n"
+        self.opt+= self.header
+        self.opt+= "\n\n"
+        self.opt+= "//Item Configuration\n\n"
+        self.opt+= self.body
+        self.opt+="\n"
+        self.opt+= "//Choice Information\n\n"
+        self.opt+= self.choiceStuff
+        self.opt+= "\n\n"
+        
+class CodeBuilder:
+    def __init__(self):
+        self.data = ""
+        self.indent = 0
+        
+    def setData(self,s,indentCount = 0):
+        self.data = s
+        self.indent = indentCount
+        
+    def __str__(self):
+        ret = ""
+        q = self.data.split("\n")
+        idn = " " * self.indent
+        for s in q:
+            ret+=idn+s+"\n"
+        return ret
+        
 class FormBuilder:
     
     def __init__(self):
@@ -190,6 +175,7 @@ class FormBuilder:
         self.hasHeader = False
         self.header = "//No Header"
         self.body = ""
+        self.cb = CodeBuilder()
         
     def addMe(self,s):
         self.opt+=s
@@ -236,6 +222,7 @@ class FormBuilder:
         self.header += s
         
     #Function about object!
-    def addObject(self,obj):
-        s = "    //Object\n\n" + str(obj) + "    //End Of Object\n\n"
+    def addObject(self,obj,comment = ""):
+        self.cb.setData(str(obj),4)
+        s = "//Object "+ comment +"\n\n" + str(self.cb) + "//End Of Object "+comment+"\n\n"
         self.body += s
