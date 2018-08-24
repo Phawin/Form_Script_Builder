@@ -162,7 +162,7 @@ class CodeBuilder:
         self.data = ""
         self.indent = 0
         
-    def setData(self,s,indentCount = 0):
+    def setData(self,s,indentCount = 4):
         self.data = s
         self.indent = indentCount
         
@@ -225,6 +225,20 @@ class FormBuilder:
         s = "form.setIsQuiz(false);\n"
         if(arg):
             s = s.replace("false","true")
+        self.header += s
+
+    def setCollectEmail(self,collect):
+        s = "form.setCollectEmail(false);\n"
+        if(collect):
+            s = s.replace("false","true")
+        self.header += s
+        
+    def setDescription(self,description):
+        s = "form.setDescription('<BODY>');\n".replace("<BODY>",description)
+        self.header += s
+        
+    def setTitle(self,title):
+        s = "form.setTitle('<BODY>');\n".replace("<BODY>",title)
         self.header += s
         
     #Function about object!
