@@ -1,4 +1,4 @@
-#Edit for Special Characters '\n' : Aug 30, 2018
+#Edit for Special Characters: Aug 30, 2018
 
 import random as rnd
 class Item:
@@ -35,6 +35,8 @@ class Item:
 
     #Small Utility Function
     def formatString(self,s):
+        s = s.replace("'","\\'")
+        s = s.replace('"','\\"')
         return s.replace("\n","\\n")
         
     #Item Type Set
@@ -208,6 +210,8 @@ class FormBuilder:
 
     #Small Utility Function
     def formatString(self,s):
+        s = s.replace("'","\\'")
+        s = s.replace('"','\\"')
         return s.replace("\n","\\n")
         
     #Script Creator
