@@ -1,3 +1,5 @@
+#Edit for Special Characters '\n' : Aug 30, 2018
+
 import random as rnd
 class Item:
     def __init__(self):
@@ -29,6 +31,11 @@ class Item:
         self.opt+= "//Item Configuration\n\n"
         self.opt+= self.body
         self.opt+="\n\n"
+
+
+    #Small Utility Function
+    def formatString(self,s):
+        return s.replace("\n","\\n")
         
     #Item Type Set
     def setItemType(self,itemType):
@@ -51,10 +58,12 @@ class Item:
     #General Item Properties
     
     def setTitle(self,title):
+        title = self.formatString(title)
         s = "item.setTitle('[TITLE]');\n".replace("[TITLE]",title)
         self.body += s
     
     def setHelpText(self,helpText):
+        helpText = self.formatString(helpText)
         self.body += "item.setHelpText('[HELP_TEXT]');\n".replace("[HELP_TEXT]",helpText)
         
 class Image(Item):
@@ -126,12 +135,12 @@ class ChoiceQuestion(Question):
         togo = []
         for p in choiceList:
             if(not hasKey):
-                togo.append("item.createChoice('[CHOICE]')".replace("[CHOICE]",str(p)))
+                togo.append("item.createChoice('[CHOICE]')".replace("[CHOICE]",self.formatString(str(p))))
             else: #Has Answer Key
                 s = "item.createChoice('[CHOICE]',false)"
                 if(p[1]):
                     s = s.replace("false","true")
-                s = s.replace("[CHOICE]",str(p[0]))
+                s = s.replace("[CHOICE]",self.formatString(str(p[0])))
                 togo.append(s)
         #Now we have all element
         if(shuffleOrder):
@@ -162,7 +171,7 @@ class CodeBuilder:
         self.data = ""
         self.indent = 0
         
-    def setData(self,s,indentCount = 4):
+    def setData(self,s,indentCount = 0):
         self.data = s
         self.indent = indentCount
         
@@ -182,6 +191,7 @@ class FormBuilder:
         self.header = "//No Header"
         self.body = ""
         self.cb = CodeBuilder()
+
         
     def addMe(self,s):
         self.opt+=s
@@ -195,6 +205,10 @@ class FormBuilder:
     
     def __str__(self):
         return self.getResult()
+
+    #Small Utility Function
+    def formatString(self,s):
+        return s.replace("\n","\\n")
         
     #Script Creator
     
@@ -208,6 +222,7 @@ class FormBuilder:
         
     #Functions about the form location
     def createNewForm(self,formName):
+        formName = self.formatString(formName)
         s = "var form = FormApp.create('[FORM_NAME]');\n".replace("[FORM_NAME]",formName)
         self.header = s
         self.hasHeader  = True
@@ -234,10 +249,12 @@ class FormBuilder:
         self.header += s
         
     def setDescription(self,description):
+        description = self.formatString(description)
         s = "form.setDescription('<BODY>');\n".replace("<BODY>",description)
         self.header += s
         
     def setTitle(self,title):
+        title = self.formatString(title)
         s = "form.setTitle('<BODY>');\n".replace("<BODY>",title)
         self.header += s
         
