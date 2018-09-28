@@ -117,7 +117,43 @@ class Question(Item):
         if(arg):
             s = s.replace("false","true")
         self.body += s
-    
+
+# A New class
+class QuizFeedback:
+
+    #Small Utility Function
+    def formatString(self,s):
+        s = s.replace("'","\\'")
+        s = s.replace('"','\\"')
+        return s.replace("\n","\\n")
+
+    def __init__ (self):
+        self.header = "var qfbb = FormApp.createFeedback();\n"
+        self.body = ""
+        self.footer = "var qfb = qfbb.build();\n"
+
+    def __str__(self):
+        ret = "//Quiz Feedback\n\n"
+        ret+= self.header + "\n"
+        ret+= self.body + "\n"
+        ret+= self.footer + "\n"
+        return ret
+
+    def addLink(self,url):
+        url = self.formatString(url)
+        self.body += "qfbb.addLink('[URL]');\n".replace("[URL]",url)
+
+    def addLink(self,url,displayText):
+        url = self.formatString(url)
+        displayText = self.formatString(displayText)
+        self.body += "qfbb.addLink('[URL]','[DISPLAY]');\n".replace("[URL]",url).replace("[DISPLAY]",displayText)
+
+    def setText(self,txt):
+        txt = self.formatString(txt)
+        self.body += "qfbb.setText('[TEXT]');\n".replace("[TEXT]",txt)
+
+
+
 class ChoiceQuestion(Question):
     def __init__(self):
         Question.__init__(self)
@@ -150,6 +186,19 @@ class ChoiceQuestion(Question):
         middle = self.convertList(togo)
         
         self.choiceStuff = "item.setChoices(<LIST>);\n".replace("<LIST>",middle)
+
+    #Quiz Feedback
+    def setFeedbackForCorrect(self,feedback):
+        s = "//Feedback for Correct Answer\n\n"
+        s += str(feedback) +"\n"
+        s += "item.setFeedbackForCorrect(qfb);\n\n"
+        self.body += s
+
+    def setFeedbackForIncorrect(self,feedback):
+        s = "//Feedback for Incorrect Answer\n\n"
+        s += str(feedback) +"\n"
+        s += "item.setFeedbackForIncorrect(qfb);\n\n"
+        self.body += s
         
     #Overriding Functions
     def compileMe(self):
